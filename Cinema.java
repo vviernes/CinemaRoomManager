@@ -37,5 +37,7 @@ public class Cinema {
         }
         System.out.println("Total income:");
         System.out.printf("$%d", income);
+
+        scanner.close();
     }
 }
