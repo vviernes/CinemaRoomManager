@@ -7,6 +7,9 @@ public class Cinema {
         int[] seatingConfig = getSeatingDimension();
         int totalRows = seatingConfig[0];
         int totalColumns = seatingConfig[1];
+        int seatsPurchased = 0;
+        int totalSeats = totalRows * totalColumns;
+        int earnedIncome = 0;
 
         // Create 2D Matrix representing the seats
         char[][] seatingArrangement = new char[totalRows][totalColumns];
@@ -16,11 +19,23 @@ public class Cinema {
             }
         }
 
+        // Calculate total possible income, given the seating arrangement 
+        int possibleIncome = 0;
+        int frontRows = totalRows / 2; 
+        int backRows =  totalRows - frontRows;
+        if (totalSeats <= 60) {
+            possibleIncome = 10 * totalRows * totalColumns;
+        } else {
+            possibleIncome = totalColumns * (10 * frontRows + 8 * backRows);
+        }
+
+
         // Loop to display Main Menu options
         boolean loopMenu = true;
         while (loopMenu) {
             System.out.println("1. Show the seats");
             System.out.println("2. Buy a ticket");
+            System.out.println("3. Statistics");
             System.out.println("0. Exit");
             System.out.println();
 
@@ -32,8 +47,13 @@ public class Cinema {
                     printSeating(seatingArrangement);
                     break;
                 case 2:
-                    int[] purchasedSeat = buyTicket(totalRows, totalColumns);
+                    int[] purchasedSeat = buyTicket(totalRows, totalColumns, seatingArrangement);
                     seatingArrangement[purchasedSeat[0] - 1][purchasedSeat[1] - 1] = 'B';
+                    seatsPurchased += 1; 
+                    earnedIncome += purchasedSeat[2];
+                    break;
+                case 3:
+                    displayStats(seatsPurchased, totalSeats, earnedIncome, possibleIncome);
                     break;
                 case 0:
                     loopMenu = false;
@@ -84,19 +104,31 @@ public class Cinema {
                 System.out.println(); // Newline after each row
             }
         }
-
         // Get user input to purchase a specific seat
-        public static int[] buyTicket(int rows, int columns) {
+        public static int[] buyTicket(int rows, int columns, char[][] seatingArrangement) {
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter a row number:");
-            int rowInput = scanner.nextInt();
-            //Get user input for number of seats
-            System.out.println("Enter a seat number in that row:");
-            int columnInput = scanner.nextInt();
+
+            // check availability of seat
+            boolean available = false;
+            int rowInput = 0;
+            int columnInput = 0;
+            while (!available) {
+                System.out.println("Enter a row number:");
+                rowInput = scanner.nextInt();
+                //Get user input for number of seats
+                System.out.println("Enter a seat number in that row:");
+                columnInput = scanner.nextInt();
+                if (rowInput < 1 || columnInput < 1 || rowInput - 1 >= rows || columnInput - 1 >= columns) {
+                    System.out.println("Wrong input!");
+                } else if (seatingArrangement[rowInput - 1][columnInput - 1] == 'B') {
+                        System.out.println("That ticket has already been purchased!");
+                } else {
+                    available = true;
+                }
+            }
     
             int totalSeats = rows * columns;
-            int frontRows = rows / 2; 
-            // int backRows = rows - frontRows;
+            int frontRows = rows / 2;
     
             int cost;
             if (totalSeats <= 60) {
@@ -111,6 +143,15 @@ public class Cinema {
             System.out.printf("Ticket price: $%d", cost);
             System.out.println();
             scanner.close();
-            return new int[] {rowInput, columnInput};
+            return new int[] {rowInput, columnInput, cost};
+        }
+
+        // Output statistics related to purchased tickets and income
+        public static void displayStats(int seatsPurchased, int totalSeats, int earnedIncome, int possibleIncome) {
+            float seatPercentage = (float) seatsPurchased / totalSeats * 100;
+            System.out.printf("Number of purchased tickets: %d\n", seatsPurchased);
+            System.out.printf("Percentage: %.2f%%\n", seatPercentage);
+            System.out.printf("Current income: $%d\n", earnedIncome);
+            System.out.printf("Total income: $%d\n", possibleIncome);
         }
 }
